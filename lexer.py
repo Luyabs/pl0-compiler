@@ -1,7 +1,7 @@
 class Lexer:
     def __init__(self):
         self.spaces = [' ', '\t', '\n']
-        self.reserved_words = ['begin', 'call', 'const', 'do', 'end', 'if', 'else', 'odd',
+        self.reserved_words = ['begin', 'call', 'const', 'do', 'end', 'if', 'odd',
                                'procedure', 'read', 'then', 'var', 'while', 'write']
         self.operators = {'+': 'plus', '-': 'minus', '*': 'times', '/': 'slash', '=': 'eql', '#': 'neq',
                           '<': 'lss', '<=': 'leq', '>': 'gtr', '>=': 'geq', ':=': 'becomes'}
@@ -55,21 +55,32 @@ class Lexer:
             elif not buffer[0].isdigit() and buffer.isalnum():  # 合法标识符
                 self.lexing_results.append(['ident', buffer])
             elif buffer[0].isdigit():  # 数字开头的非法标识符
-                self.error_notice(location, buffer, 'ident can not start with number')
+                self.error_notice(location, buffer, 'invalid_lex, ident is not allowed to start with number')
             else:
-                self.error_notice(location, buffer, 'invalid_lex, undefined symbol')
+                self.error_notice(location, buffer, 'invalid_lex, ident contains undefined symbol')
         return ''
 
     # 将词法分析的运算符缓冲区加入结果列表
     def add_operator_to_lexing_results(self, operator_buffer: str, location: int) -> str:
         if operator_buffer != '':
-            if operator_buffer in self.operators:  # 如果是多字符运算符 则一块加入lexing_results
-                self.lexing_results.append([self.operators.get(operator_buffer), operator_buffer])
-            elif operator_buffer == ':=-' or operator_buffer == ':=+':  # 单独判断 :=+ :=-
-                self.lexing_results.append([self.operators.get(operator_buffer[0: 2]), operator_buffer[0: 2]])
-                self.lexing_results.append([self.operators.get(operator_buffer[2]), operator_buffer[2]])
-            else:
-                self.error_notice(location, operator_buffer, 'invalid_lex, undefined operator')  # 异常
+            i = 0
+            while i < len(operator_buffer):
+                if i < len(operator_buffer) - 1:  # 检查可能存在的双运算符 [如果一个运算符还有一个运算符则将二者一并考虑]
+                    double_operator = operator_buffer[i: i + 2]
+                    if double_operator in self.operators:
+                        self.lexing_results.append([self.operators.get(double_operator), double_operator])
+                        i += 2
+                        continue
+                    elif double_operator[0] in ['+', '-', '*', '/'] and double_operator[1] in self.operators:  # 加减乘除后面一定不能接运算符
+                        self.error_notice(location, double_operator, 'invalid_lex, undefined operator')  # 异常
+                        i += 2
+                        continue
+
+                if operator_buffer[i] in self.operators:
+                    self.lexing_results.append([self.operators.get(operator_buffer[i]), operator_buffer[i]])
+                else:
+                    self.error_notice(location, operator_buffer[i], 'invalid_lex, undefined operator')  # 异常
+                i += 1
         return ''
 
     # 统计词法分析中某类单词出现的次数情况
