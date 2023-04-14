@@ -71,7 +71,8 @@ class Lexer:
                         self.lexing_results.append([self.operators.get(double_operator), double_operator])
                         i += 2
                         continue
-                    elif double_operator[0] in ['+', '-', '*', '/'] and double_operator[1] in self.operators:  # 加减乘除后面一定不能接运算符
+                    elif double_operator[0] in ['+', '-', '*', '/'] and double_operator[
+                        1] in self.operators:  # 加减乘除后面一定不能接运算符
                         self.error_notice(location, double_operator, 'invalid_lex, undefined operator')  # 异常
                         i += 2
                         continue
