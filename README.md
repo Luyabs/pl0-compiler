@@ -1,4 +1,4 @@
-# pl0-compiler (only lexing)
+# pl0-compiler (lex + parse)
 ### 项目构成:
 > `main.py` - 程序运行入口  
 > `compiler.py` - 编译器(外观模式)  
