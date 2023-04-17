@@ -13,7 +13,7 @@ class Parser:
         while self.current < len(self.lexing_result):   # 每一句表达式结束 就开始判断下一句是否为表达式
             success = self.parse_expression()
             self.parsing_result.append(
-                ['success' if success else 'false', self.current - 1, self.lexing_result[self.current - 1]]
+                ['success' if success else 'failed', self.current - 1, self.lexing_result[self.current - 1]]
             )
 
         return self.parsing_result
@@ -21,7 +21,7 @@ class Parser:
     # 从词法分析结果中取词
     def get_next_token(self) -> None:
         self.current += 1
-        self.token = self.lexing_result[self.current] if self.current < len(self.lexing_result) else ['EOF', 'EOF']
+        self.token = self.lexing_result[self.current] if self.current < len(self.lexing_result) - 1 else ['EOF', 'EOF']
         # 获取新token 最后一词则设为EOF
 
     # 表达式 分析
@@ -59,6 +59,7 @@ class Parser:
                 self.get_next_token()
                 return True
 
+        self.get_next_token()
         return False
 
     # 加法运算符
