@@ -3,7 +3,6 @@ class Parser:
         self.lexing_result = []  # 先前词法分析得到的结果
         self.parsing_result = []  # 语法分析结果
         self.token = []  # 当前词 [词性, 内容]
-        self.previous_token = []  # 上一个词 用于生成结果
         self.current = -1  # 当前词位置
 
     # 语法分析
@@ -13,21 +12,17 @@ class Parser:
 
         while self.current < len(self.lexing_result):   # 每一句表达式结束 就开始判断下一句是否为表达式
             success = self.parse_expression()
-            if success:
-                self.parsing_result.append(['success', self.current - 1, self.previous_token[1]])
-            else:
-                self.parsing_result.append(['failed', self.current - 1, self.previous_token[1]])
+            self.parsing_result.append(
+                ['success' if success else 'false', self.current - 1, self.lexing_result[self.current - 1]]
+            )
 
         return self.parsing_result
 
     # 从词法分析结果中取词
     def get_next_token(self):
-        self.previous_token = self.token
         self.current += 1
-        if self.current < len(self.lexing_result):
-            self.token = self.lexing_result[self.current]   # 获取新token
-        else:
-            self.token = ['EOF', 'EOF']     # 设置结尾判定token 遍历最后一词时如果表达式不成立则停止
+        self.token = self.lexing_result[self.current] if self.current < len(self.lexing_result) else ['EOF', 'EOF']
+        # 获取新token 最后一词则设为EOF
 
     # 表达式 分析
     def parse_expression(self):  # <表达式> ::= [+|-]<项>{<加法运算符> <项>}
@@ -53,22 +48,18 @@ class Parser:
 
     # 因子 分析
     def parse_factor(self):  # <因子> ::= <标识符>|<无符号整数>| '('<表达式>')'
-        success = False
-
         if self.is_ident() or self.is_number():     # <标识符>|<无符号整数>
             self.get_next_token()
-            success = True
+            return True
 
         elif self.token[0] == 'lparen':     # | '('<表达式>')'
             self.get_next_token()
             self.parse_expression()
             if self.token[0] == 'rparen':
                 self.get_next_token()
-                success = True
+                return True
 
-        return success
-
-
+        return False
 
     # 加法运算符
     def is_add_operator(self):
@@ -89,4 +80,3 @@ class Parser:
     def is_number(self):
         pos, content = self.token
         return pos == 'number'
-
