@@ -19,13 +19,13 @@ class Parser:
         return self.parsing_result
 
     # 从词法分析结果中取词
-    def get_next_token(self):
+    def get_next_token(self) -> None:
         self.current += 1
         self.token = self.lexing_result[self.current] if self.current < len(self.lexing_result) else ['EOF', 'EOF']
         # 获取新token 最后一词则设为EOF
 
     # 表达式 分析
-    def parse_expression(self):  # <表达式> ::= [+|-]<项>{<加法运算符> <项>}
+    def parse_expression(self) -> bool:  # <表达式> ::= [+|-]<项>{<加法运算符> <项>}
         if self.is_add_operator():  # [+|-]
             self.get_next_token()
         success = self.parse_term()  # <项>
@@ -37,7 +37,7 @@ class Parser:
         return success
 
     # 项 分析
-    def parse_term(self):   # <项> ::= <因子>{<乘法运算符> <因子>}
+    def parse_term(self) -> bool:   # <项> ::= <因子>{<乘法运算符> <因子>}
         success = self.parse_factor()   # <因子>
 
         while self.is_multiply_operator():  # {<乘法运算符> ...}
@@ -47,7 +47,7 @@ class Parser:
         return success
 
     # 因子 分析
-    def parse_factor(self):  # <因子> ::= <标识符>|<无符号整数>| '('<表达式>')'
+    def parse_factor(self) -> bool:  # <因子> ::= <标识符>|<无符号整数>| '('<表达式>')'
         if self.is_ident() or self.is_number():     # <标识符>|<无符号整数>
             self.get_next_token()
             return True
@@ -62,21 +62,21 @@ class Parser:
         return False
 
     # 加法运算符
-    def is_add_operator(self):
+    def is_add_operator(self) -> bool:
         pos, content = self.token
         return pos == 'plus' or pos == 'minus'
 
     # 乘法运算符
-    def is_multiply_operator(self):
+    def is_multiply_operator(self) -> bool:
         pos, content = self.token
         return pos == 'times' or pos == 'slash'
 
     # 标识符
-    def is_ident(self):
+    def is_ident(self) -> bool:
         pos, content = self.token
         return pos == 'ident'
 
     # 无符号整数(非标识符整数)
-    def is_number(self):
+    def is_number(self) -> bool:
         pos, content = self.token
         return pos == 'number'
