@@ -30,9 +30,9 @@ class Parser:
     # 条件分析
     def parse_condition(self) -> bool:  # <条件> ::=<表达式>[=|#|<|>|<=|>=]<表达式>
         success = self.parse_expression()  # <表达式>
-        while self.is_compare_operator():  # <比较运算符>
+        while success and self.is_compare_operator():  # <比较运算符>
             self.get_next_token()
-            success = success and self.parse_expression()
+            success = self.parse_expression()
         return success
 
     # 表达式 分析
@@ -41,9 +41,9 @@ class Parser:
             self.get_next_token()
         success = self.parse_term()  # <项>
 
-        while self.is_add_operator():  # {<加法运算符> ...}
+        while success and self.is_add_operator():  # {<加法运算符> ...}
             self.get_next_token()
-            success = success and self.parse_term()  # <项>
+            success = self.parse_term()  # <项>
 
         return success
 
@@ -51,9 +51,9 @@ class Parser:
     def parse_term(self) -> bool:  # <项> ::= <因子>{<乘法运算符> <因子>}
         success = self.parse_factor()  # <因子>
 
-        while self.is_multiply_operator():  # {<乘法运算符> ...}
+        while success and self.is_multiply_operator():  # {<乘法运算符> ...}
             self.get_next_token()
-            success = success and self.parse_factor()  # <因子>
+            success = self.parse_factor()  # <因子>
 
         return success
 
@@ -65,7 +65,8 @@ class Parser:
 
         elif self.token[0] == 'lparen':  # | '('<表达式>')'
             self.get_next_token()
-            self.parse_expression()
+            if not self.parse_expression():
+                return False
             if self.token[0] == 'rparen':
                 self.get_next_token()
                 return True
