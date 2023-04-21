@@ -15,10 +15,10 @@ class Parser:
         while self.current < len(self.lexing_result):  # 每一句表达式结束 就开始判断下一句是否为表达式
             rollback_stack.append([self.current, self.token])
             success = self.parse_condition()        # 条件表达式?
-            if not success:
-                self.current, self.token = rollback_stack.pop(-1)
-                rollback_stack.append([self.current, self.token])
-                success = self.parse_expression()       # 表达式?
+            # if not success:
+            #     self.current, self.token = rollback_stack.pop(-1)
+            #     rollback_stack.append([self.current, self.token])
+            #     success = self.parse_expression()       # 表达式?
 
             rollback_stack.pop(-1)
 
@@ -47,7 +47,7 @@ class Parser:
             success = self.parse_expression()
         else:
             success = self.parse_expression()  # <表达式>
-            if success and self.is_compare_operator():  # <比较运算符>
+            while success and self.is_compare_operator():  # <比较运算符>
                 self.get_next_token()
                 success = self.parse_expression()
         return success
@@ -75,14 +75,14 @@ class Parser:
         return success
 
     # 因子 分析
-    def parse_factor(self) -> bool:  # <因子> ::= <标识符>|<无符号整数>| '('<表达式>')'
+    def parse_factor(self) -> bool:  # <因子> ::= <标识符>|<无符号整数>| '('<条件表达式>')'
         if self.is_ident() or self.is_number():  # <标识符>|<无符号整数>
             self.get_next_token()
             return True
 
-        elif self.token[0] == 'lparen':  # | '('<表达式>')'
+        elif self.token[0] == 'lparen':  # | '('<条件表达式>')'
             self.get_next_token()
-            if not self.parse_expression():
+            if not self.parse_condition():
                 return False
             if self.token[0] == 'rparen':
                 self.get_next_token()
