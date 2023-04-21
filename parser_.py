@@ -15,10 +15,12 @@ class Parser:
         while self.current < len(self.lexing_result):  # 每一句表达式结束 就开始判断下一句是否为表达式
             rollback_stack.append([self.current, self.token])
             success = self.parse_condition()        # 条件表达式?
+            tag = '条件表达式'
             if not success:
                 self.current, self.token = rollback_stack.pop(-1)
                 rollback_stack.append([self.current, self.token])
                 success = self.parse_expression()       # 表达式?
+                tag = '表达式'
 
             rollback_stack.pop(-1)
 
@@ -27,7 +29,7 @@ class Parser:
                 self.error += 1
             else:
                 if success:
-                    self.parsing_result.append(['success', self.current - 1, self.lexing_result[self.current - 1]])
+                    self.parsing_result.append(['success', tag, self.current - 1, self.lexing_result[self.current - 1]])
                 else:
                     self.parsing_result.append(['fail', self.current - 1, self.lexing_result[self.current - 1]])
                     self.error += 1
@@ -50,6 +52,8 @@ class Parser:
             if success and self.is_compare_operator():  # <比较运算符>
                 self.get_next_token()
                 success = self.parse_expression()
+            else:
+                return False
         return success
 
     # 表达式 分析
