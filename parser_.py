@@ -4,20 +4,33 @@ class Parser:
         self.parsing_result = []  # 语法分析结果
         self.token = []  # 当前词 [词性, 内容]
         self.current = -1  # 当前词位置
+        self.error = 0  # 语法分析异常数量
 
     # 语法分析
     def parsing(self, lexing_result: list) -> list:
         self.lexing_result = lexing_result
         self.get_next_token()
 
+        rollback_stack = []     # 回溯栈
         while self.current < len(self.lexing_result):  # 每一句表达式结束 就开始判断下一句是否为表达式
-            success = self.parse_condition()
+            rollback_stack.append([self.current, self.token])
+            success = self.parse_condition()        # 条件表达式?
+            if not success:
+                self.current, self.token = rollback_stack.pop(-1)
+                rollback_stack.append([self.current, self.token])
+                success = self.parse_expression()       # 表达式?
+
+            rollback_stack.pop(-1)
+
             if self.current > len(self.lexing_result):
-                self.parsing_result.append(['failed', 'EOF', 'EOF'])
+                self.parsing_result.append(['fail', 'EOF', 'EOF'])
+                self.error += 1
             else:
-                self.parsing_result.append(
-                    ['success' if success else 'failed', self.current - 1, self.lexing_result[self.current - 1]]
-                )
+                if success:
+                    self.parsing_result.append(['success', self.current - 1, self.lexing_result[self.current - 1]])
+                else:
+                    self.parsing_result.append(['fail', self.current - 1, self.lexing_result[self.current - 1]])
+                    self.error += 1
 
         return self.parsing_result
 
@@ -29,10 +42,14 @@ class Parser:
 
     # 条件分析
     def parse_condition(self) -> bool:  # <条件> ::=<表达式>[=|#|<|>|<=|>=]<表达式>
-        success = self.parse_expression()  # <表达式>
-        while success and self.is_compare_operator():  # <比较运算符>
+        if self.token[0] == 'oddsym':
             self.get_next_token()
             success = self.parse_expression()
+        else:
+            success = self.parse_expression()  # <表达式>
+            if success and self.is_compare_operator():  # <比较运算符>
+                self.get_next_token()
+                success = self.parse_expression()
         return success
 
     # 表达式 分析

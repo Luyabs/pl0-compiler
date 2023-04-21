@@ -6,12 +6,22 @@ class Compiler:
     def __init__(self):
         self.lexer = Lexer()
         self.parser = Parser()
-        # TODO: 语法分析器, 语义分析器, ...
+        # TODO: 语义分析器, ...
 
     def run(self, input_file: str, output_file: str) -> None:
         result = self.lexing(input_file, output_file)
+        if self.lexer.error > 0:
+            print("\033[32m词法分析有误, 不再进行语法分析!\033[0m")
+            return
+        else:
+            print("\033[34m词法分析无误, 进行语法分析...\033[0m")
         result = self.parsing(result)
-        # TODO: 语法分析器, 语义分析器, ...
+        if self.parser.error > 0:
+            print("\033[32m语法分析有误!\033[0m")
+            return
+        else:
+            print("\033[35m语法分析无误\033[0m")
+        # TODO: 语义分析器, ...
 
     # 词法分析
     def lexing(self, input_file: str, output_file: str) -> list:
