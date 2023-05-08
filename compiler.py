@@ -15,7 +15,7 @@ class Compiler:
             return
         else:
             print("\033[34m词法分析无误, 进行语法分析...\033[0m")
-        result = self.parsing(result)
+        result1, result2 = self.parsing(result)
         if self.parser.error > 0:
             print("\033[32m语法分析有误!\033[0m")
             return
@@ -38,6 +38,8 @@ class Compiler:
         return self.lexer.lexing_results
 
     # 语法分析
-    def parsing(self, lexing_result: list) -> list:
+    def parsing(self, lexing_result: list):
         self.parser.parsing(lexing_result)
-        return self.parser.parsing_result
+        return self.parser.parsing_result, self.parser.semantic_result
+
+    # 语义分析
