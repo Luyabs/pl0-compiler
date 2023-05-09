@@ -10,6 +10,7 @@ class Parser:
         self.operator_priority = {'(': 0, ')': 0, '+': 1, '-': 1, '*': 2, '/': 2}  # 算符优先级
         self.semantic_result = []  # 语义分析结果
         self.semantic_error = -1  # 语义分析报错
+        self.semantic_error_num = 0  # 语义分析报错数量
         self.intermediate_code_result = []  # 中间代码生成结果
 
     # 语法分析
@@ -166,6 +167,7 @@ class Parser:
         if p == '/':
             if b == 0:  # 除数为0
                 self.semantic_error = 1
+                self.semantic_error_num += 1
             else:
                 ans = a / b
         self.number_stack.append(ans)

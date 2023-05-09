@@ -21,6 +21,11 @@ class Compiler:
             return
         else:
             print("\033[35m语法分析无误\033[0m")
+        if self.parser.semantic_error_num > 0:
+            print("\033[32m语义分析有误!\033[0m")
+            return
+        else:
+            print("\033[36m语义分析无误\033[0m")
         # TODO: 语义分析器, ...
 
     # 词法分析
