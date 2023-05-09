@@ -10,6 +10,7 @@ class Parser:
         self.operator_priority = {'(': 0, ')': 0, '+': 1, '-': 1, '*': 2, '/': 2}  # 算符优先级
         self.semantic_result = []  # 语义分析结果
         self.semantic_error = -1  # 语义分析报错
+        self.intermediate_code_result = []  # 中间代码生成结果
 
     # 语法分析
     def parsing(self, lexing_result: list) -> list:
@@ -35,11 +36,20 @@ class Parser:
             else:
                 if success:
                     self.parsing_result.append(['success', self.current - 1, self.lexing_result[self.current - 1]])
-                    while len(self.operator_stack):
-                        self.eval()
-                    self.semantic_result.append(self.number_stack.pop())
+                    if self.semantic_error == 1:  # 语义分析是否有误
+                        self.operator_stack = []
+                        self.number_stack = []
+                        self.semantic_result.append('语义有误,除数为0')
+                        self.semantic_error = -1
+                    else:
+                        while len(self.operator_stack):
+                            self.eval()
+                        self.semantic_result.append(self.number_stack.pop())
                 else:
                     self.parsing_result.append(['fail', self.current - 1, self.lexing_result[self.current - 1]])
+                    self.operator_stack = []
+                    self.number_stack = []
+                    self.semantic_result.append('语法分析有误，无法语义分析')
                     self.error += 1
 
         return self.parsing_result
@@ -154,5 +164,8 @@ class Parser:
         if p == '*':
             ans = a * b
         if p == '/':
-            ans = a / b
+            if b == 0:  # 除数为0
+                self.semantic_error = 1
+            else:
+                ans = a / b
         self.number_stack.append(ans)
