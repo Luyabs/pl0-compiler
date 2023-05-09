@@ -40,7 +40,7 @@ class Parser:
                     if self.semantic_error == 1:  # 语义分析是否有误
                         self.operator_stack = []
                         self.number_stack = []
-                        self.semantic_result.append('语义有误,除数为0')
+                        self.semantic_result.append('语义有误')
                         self.semantic_error = -1
                     else:
                         while len(self.operator_stack):
@@ -160,14 +160,17 @@ class Parser:
         ans = 0
         if p == '+':
             ans = a + b
-        if p == '-':
+        elif p == '-':
             ans = a - b
-        if p == '*':
+        elif p == '*':
             ans = a * b
-        if p == '/':
+        elif p == '/':
             if b == 0:  # 除数为0
                 self.semantic_error = 1
                 self.semantic_error_num += 1
             else:
                 ans = a / b
+        else:
+            self.semantic_error = 1
+            self.semantic_error_num += 1
         self.number_stack.append(ans)
