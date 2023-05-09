@@ -12,6 +12,8 @@ class Parser:
         self.semantic_error = -1  # 语义分析报错
         self.semantic_error_num = 0  # 语义分析报错数量
         self.intermediate_code_result = []  # 中间代码生成结果
+        self.intermediate_code_result_store = []  # 中间代码生成结果存储
+        self.temp_num = 1  # 临时变量的数量
 
     # 语法分析
     def parsing(self, lexing_result: list) -> list:
@@ -33,26 +35,28 @@ class Parser:
                 self.parsing_result.append(['fail', 'EOF', 'EOF'])
                 self.operator_stack = []
                 self.number_stack = []
+                self.temp_num = 1
+                self.intermediate_code_result_store = []
+                self.intermediate_code_result.append('语法分析有误，无法生成中间代码')
                 self.error += 1
             else:
                 if success:
                     self.parsing_result.append(['success', self.current - 1, self.lexing_result[self.current - 1]])
-                    if self.semantic_error == 1:  # 语义分析是否有误
-                        self.operator_stack = []
-                        self.number_stack = []
-                        self.semantic_result.append('语义有误,除数为0')
-                        self.semantic_error = -1
-                    else:
-                        while len(self.operator_stack):
-                            self.eval()
-                        self.semantic_result.append(self.number_stack.pop())
+                    while len(self.operator_stack):
+                        self.eval()
+                    self.temp_num = 1
+                    self.number_stack = []
+                    for item in self.intermediate_code_result_store:
+                        self.intermediate_code_result.append(item)
+                    self.intermediate_code_result_store = []
                 else:
                     self.parsing_result.append(['fail', self.current - 1, self.lexing_result[self.current - 1]])
                     self.operator_stack = []
                     self.number_stack = []
-                    self.semantic_result.append('语法分析有误，无法语义分析')
+                    self.temp_num = 1
+                    self.intermediate_code_result_store = []
+                    self.intermediate_code_result.append('语法分析有误，无法生成中间代码')
                     self.error += 1
-
         return self.parsing_result
 
     # 从词法分析结果中取词
@@ -154,20 +158,12 @@ class Parser:
 
     # 算术计算
     def eval(self):
-        b = float(self.number_stack.pop())
-        a = float(self.number_stack.pop())
+        b = self.number_stack.pop()
+        a = self.number_stack.pop()
         p = self.operator_stack.pop()
-        ans = 0
-        if p == '+':
-            ans = a + b
-        if p == '-':
-            ans = a - b
-        if p == '*':
-            ans = a * b
-        if p == '/':
-            if b == 0:  # 除数为0
-                self.semantic_error = 1
-                self.semantic_error_num += 1
-            else:
-                ans = a / b
-        self.number_stack.append(ans)
+        t = 'T'+str(self.temp_num)
+        s = (p, a, b, t)
+        self.intermediate_code_result_store.append(s)
+        self.number_stack.append(t)
+        self.temp_num += 1
+
